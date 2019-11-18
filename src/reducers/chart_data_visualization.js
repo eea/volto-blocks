@@ -14,7 +14,7 @@ const initialState = {
  * @param {Object} action Action to be handled.
  * @returns {Object} New state.
  */
-export default function data_providers(state = initialState, action = {}) {
+export default function chart_data_visualization(state = initialState, action = {}) {
   switch (action.type) {
     case `${GET_CHART_DATA_FROM_VISUALIZATION}_PENDING`:
       return {
