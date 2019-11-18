@@ -3,7 +3,7 @@ import 'react-chart-editor/lib/react-chart-editor.css';
 import Loadable from 'react-loadable';
 import { connect } from 'react-redux';
 import { searchContent } from '@plone/volto/actions';
-import { getDataFromProvider } from '~/actions';
+import { chart_data_visualization } from '~/actions';
 import { Dropdown } from 'semantic-ui-react';
 
 const LoadablePlotlyEditor = Loadable({
@@ -73,7 +73,7 @@ class Edit extends Component {
   }
 
   handleChangeProvider(ev, { value }) {
-    this.props.getDataFromProvider(value);
+    this.props.chart_data_visualization(value);
   }
 
   render() {
@@ -133,5 +133,5 @@ export default connect(
       dataSourceOptions: getDataSourceOptions(providerData || dataSources),
     };
   },
-  { searchContent, getDataFromProvider },
+  { searchContent, chart_data_visualization },
 )(Edit);
