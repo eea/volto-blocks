@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import TableauReport from '~/components/theme/TableauView/TableauReport';
+import TableauReport from '../TableauView/TableauReport';
 
 class TableauBlockView extends Component {
   constructor(props) {

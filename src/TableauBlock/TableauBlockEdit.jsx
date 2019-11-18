@@ -4,7 +4,7 @@ import { Button } from 'semantic-ui-react';
 
 import { ResponsiveContainer } from 'recharts';
 
-import TableauReport from '~/components/theme/TableauView/TableauReport';
+import TableauReport from '../TableauView/TableauReport';
 
 // const url = 'http://public.tableau.com/views/RegionalSampleWorkbook/Storms';
 
