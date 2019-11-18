@@ -56,9 +56,15 @@ class Edit extends Component {
     super(props);
 
     if (!__SERVER__) {
-      const htmltext = (props.data && props.data.editorState) || '';
-
-      this.state = {editorState: htmltext || EditorState.createEmpty()};
+      let editorState;
+      if (props.data && props.data.text) {
+        editorState = EditorState.createWithContent(
+          convertFromRaw(props.data.text),
+        );
+      } else {
+        editorState = EditorState.createEmpty();
+      }
+      this.state = {editorState: editorState || EditorState.createEmpty()};
     
     }
 
