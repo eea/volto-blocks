@@ -6,11 +6,16 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { injectIntl } from 'react-intl';
+import { connect } from "react-redux";
+import { compose } from 'redux';
 import cx from 'classnames';
 import '~/../node_modules/react-draft-wysiwyg/dist/react-draft-wysiwyg.css';
 import { EditorState } from 'draft-js';
 import { Editor } from 'react-draft-wysiwyg';
 import { isEqual } from 'lodash';
+import { createContent } from '@plone/volto/actions';
+import { getBaseUrl } from '@plone/volto/helpers';
+import { readAsDataURL } from 'promise-file-reader';
 
 import { convertFromRaw, convertToRaw } from 'draft-js';
 
@@ -35,6 +40,10 @@ class Edit extends Component {
     onFocusPreviousBlock: PropTypes.func.isRequired,
     onFocusNextBlock: PropTypes.func.isRequired,
     onSelectBlock: PropTypes.func.isRequired,
+
+    pathname: PropTypes.string.isRequired,
+    createContent: PropTypes.func.isRequired,
+    content: PropTypes.objectOf(PropTypes.any).isRequired
   };
 
   /**
@@ -64,19 +73,19 @@ class Edit extends Component {
       } else {
         editorState = EditorState.createEmpty();
       }
-      this.state = {editorState: editorState || EditorState.createEmpty()};
-    
+      this.state = { editorState: editorState || EditorState.createEmpty(), uploadedImages: [] };
+
     }
 
     this.onChange = this.onChange.bind(this);
   }
-  
+
   handleReturn() {
     console.log('handleReturn')
     return true
   }
 
-  componentDidMount(){
+  componentDidMount() {
     this.node && this.node.addEventListener('keyDown', handleReturn)
   }
 
@@ -117,8 +126,50 @@ class Edit extends Component {
   //   // console.log('willupdate', nextState, this.ref)
   //   this.ref.handleReturn = () => 'un-handled';
   //   this.ref.focusEditor()
-    
+
   // }
+
+  onUploadImage = file => {
+
+    //creating img content
+    readAsDataURL(file)
+      .then(data => {
+        const fields = data.match(/^data:(.*);(.*),(.*)$/);
+        this.props.createContent(getBaseUrl(this.props.pathname), {
+          '@type': 'Image',
+          title: file.name,
+          image: {
+            data: fields[3],
+            encoding: fields[2],
+            'content-type': fields[1],
+            filename: file.name,
+          },
+        });
+      });
+
+
+
+    //we store img to state
+    let uploadedImages = this.state.uploadedImages;
+
+    const imageObject = {
+      file: file,
+      localSrc: URL.createObjectURL(file),
+    }
+
+    uploadedImages.push(imageObject);
+
+    this.setState(uploadedImages)
+
+
+    // We need to return a promise with the image src
+    // the img src we will use here will be what's needed
+    return new Promise(
+      (resolve, reject) => {
+        resolve({ data: { link: imageObject.localSrc } });
+      }
+    );
+  }
 
   /**
    * Render method.
@@ -160,46 +211,59 @@ class Edit extends Component {
         // onClick={() => this.props.onSelectBlock(this.props.block)}
         className={cx('block text', { selected: this.props.selected })}
         // ref={node => (this.ref = node)}
-        onClick={(e)=> {
+        onClick={(e) => {
           this.props.onSelectBlock(this.props.block)
         }}
-        // onKeyPress={(e)=> {
+      // onKeyPress={(e)=> {
 
-        //   console.log('lalalala')
-        //   this.props.handleKeyDown({key: null},
-        //     this.props.index,
-        //     this.props.block,
-        //     this.ref,
-        //     {
-        //       disableEnter: true,
-        //       disableArrowUp: true,
-        //       disableArrowDown: true,
-        //     })
-        //   }
-        //   }
+      //   console.log('lalalala')
+      //   this.props.handleKeyDown({key: null},
+      //     this.props.index,
+      //     this.props.block,
+      //     this.ref,
+      //     {
+      //       disableEnter: true,
+      //       disableArrowUp: true,
+      //       disableArrowDown: true,
+      //     })
+      //   }
+      //   }
 
       >
         <Editor
-          editorState={editorState} 
+          editorState={editorState}
           onEditorStateChange={this.onChange}
           // onChange={this.onChange}
           ref={node => (this.ref = node)}
-      
-          // onKeyPress={(e)=>this.props.handleKeyDown(e,
-          //   this.props.index,
-          //   this.props.block,
-          //   this.ref,
-          //   {
-          //     disableEnter: true,
-          //     disableArrowUp: true,
-          //     disableArrowDown: true,
-          // })}
-          // onBlur={(event, editor) => {}}
-          // onFocus={(event, editor) => {}}
+          toolbar={{ 
+            image: { uploadEnabled: true, uploadCallback: this.onUploadImage } }}
+
+        // onKeyPress={(e)=>this.props.handleKeyDown(e,
+        //   this.props.index,
+        //   this.props.block,
+        //   this.ref,
+        //   {
+        //     disableEnter: true,
+        //     disableArrowUp: true,
+        //     disableArrowDown: true,
+        // })}
+        // onBlur={(event, editor) => {}}
+        // onFocus={(event, editor) => {}}
         />
       </div>
     );
   }
 }
 
-export default injectIntl(Edit);
+
+
+export default compose(
+  injectIntl,
+  connect(
+    state => ({
+      request: state.content.create,
+      content: state.content.data,
+    }),
+    { createContent },
+  ),
+)(Edit);
