@@ -1,4 +1,4 @@
-import { getChartDataFromVisualization } from '~/actions';
+import { getChartDataFromVisualization } from '../actions';
 import { searchContent } from '@plone/volto/actions';
 import { connect } from 'react-redux';
 import Loadable from 'react-loadable';
