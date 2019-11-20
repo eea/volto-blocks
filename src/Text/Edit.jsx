@@ -20,7 +20,6 @@ import { readAsDataURL } from 'promise-file-reader';
 import { convertFromRaw, convertToRaw } from 'draft-js';
 
 
-
 class Edit extends Component {
   /**
    * Property types.
@@ -73,7 +72,7 @@ class Edit extends Component {
       } else {
         editorState = EditorState.createEmpty();
       }
-      this.state = { editorState: editorState || EditorState.createEmpty(), uploadedImages: [] };
+      this.state = { editorState: editorState || EditorState.createEmpty(), uploadedImages: [], imgBlob: "", imgUrl: "" };
 
     }
 
@@ -131,44 +130,33 @@ class Edit extends Component {
 
   onUploadImage = file => {
 
-    //creating img content
-    readAsDataURL(file)
-      .then(data => {
-        const fields = data.match(/^data:(.*);(.*),(.*)$/);
-        this.props.createContent(getBaseUrl(this.props.pathname), {
-          '@type': 'Image',
-          title: file.name,
-          image: {
-            data: fields[3],
-            encoding: fields[2],
-            'content-type': fields[1],
-            filename: file.name,
-          },
-        });
-      });
-
-
-
-    //we store img to state
-    let uploadedImages = this.state.uploadedImages;
-
-    const imageObject = {
-      file: file,
-      localSrc: URL.createObjectURL(file),
-    }
-
-    uploadedImages.push(imageObject);
-
-    this.setState(uploadedImages)
-
-
-    // We need to return a promise with the image src
-    // the img src we will use here will be what's needed
     return new Promise(
       (resolve, reject) => {
-        resolve({ data: { link: imageObject.localSrc } });
+        readAsDataURL(file)
+        .then(data => {
+          const fields = data.match(/^data:(.*);(.*),(.*)$/);
+          this.props.createContent(getBaseUrl(this.props.pathname), {
+            '@type': 'Image',
+            title: file.name,
+            image: {
+              data: fields[3],
+              encoding: fields[2],
+              'content-type': fields[1],
+              filename: file.name,
+            },
+          }).then(res => {
+            
+            let url = res['@id'];
+            //const blob = URL.createObjectURL(file);
+
+            this.setState({ imgUrl: url })
+            resolve({ data: { link: url } })
+
+          })
+        })
+  
       }
-    );
+    )
   }
 
   /**
@@ -204,12 +192,12 @@ class Edit extends Component {
     };
     //
     const { editorState } = this.state;
-    // console.log('in editor', this.props.selected, this.props.block)
     return (
       <div
         role="presentation"
         // onClick={() => this.props.onSelectBlock(this.props.block)}
-        className={cx('block text', { selected: this.props.selected })}
+        className={cx('block text', { selected: this.props.selected })
+        }
         // ref={node => (this.ref = node)}
         onClick={(e) => {
           this.props.onSelectBlock(this.props.block)
@@ -235,8 +223,9 @@ class Edit extends Component {
           onEditorStateChange={this.onChange}
           // onChange={this.onChange}
           ref={node => (this.ref = node)}
-          toolbar={{ 
-            image: { uploadEnabled: true, uploadCallback: this.onUploadImage } }}
+          toolbar={{
+            image: { previewImage: true, uploadEnabled: true, uploadCallback: this.onUploadImage }
+          }}
 
         // onKeyPress={(e)=>this.props.handleKeyDown(e,
         //   this.props.index,
@@ -250,7 +239,7 @@ class Edit extends Component {
         // onBlur={(event, editor) => {}}
         // onFocus={(event, editor) => {}}
         />
-      </div>
+      </div >
     );
   }
 }
