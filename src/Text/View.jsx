@@ -14,10 +14,11 @@ import { settings } from '~/config';
  * @extends Component
  */
 const View = ({ data }) => {
-  let text = data.cktext;
+  let text = data.text;
   let result;
 
   if (typeof text === 'string') {
+    console.log('isString')
     // TODO: need better regexp here
     text = text.replace(/(<? *script)/gi, 'illegalscript');
     result = (
@@ -29,6 +30,7 @@ const View = ({ data }) => {
     );
   } else {
     result = redraft(text, settings.ToHTMLRenderers, settings.ToHTMLOptions);
+    console.log('result', result)
   }
   return text ? result : '';
 };
