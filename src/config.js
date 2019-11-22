@@ -1,11 +1,14 @@
-// import ChartBlockEdit from './ChartBlock/ChartBlockEdit';
-// import ChartBlockView from './ChartBlock/ChartBlockView';
+import ChildrenListView from './ChildrenList/View';
+import ChildrenListEdit from './ChildrenList/Edit';
 
-// import TableauBlockEdit from './TableauBlock/TableauBlockEdit';
-// import tableauBlockView from './TableauBlock/TableauBlockView';
-
-// import TextBlockEdit from './Ckeditor/Edit';
-// import TextBlockView from './Ckeditor/View';
-
-// import TextBlockEditWysiwyg from './Text/Edit';
-// import TextBlockViewWysiwyg from './Text/View';
+export function applyConfig(config) {
+  config.blocks.blocksConfig.childrenlist = {
+    id: 'childrenlist',
+    group: 'custom_addons',
+    title: 'Children List',
+    view: ChildrenListView,
+    edit: ChildrenListEdit,
+    icon: config.blocks.blocksConfig.text.icon,
+  };
+  return config;
+}
