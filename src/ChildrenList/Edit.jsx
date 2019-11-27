@@ -52,6 +52,15 @@ class Edit extends Component {
     }
   }
 
+  componentDidUpdate(prevProps, prevState) {
+    if (
+      this.state.items.length &&
+      prevState.items.length !== this.state.items.length
+    ) {
+      this.onChangedData();
+    }
+  }
+
   onChangedData() {
     this.props.onChangeBlock(this.props.block, {
       ...this.props.data,
@@ -81,7 +90,6 @@ class Edit extends Component {
           </ul>
         )}
         {!hasChildren && <p> There are no children to display </p>}
-        <button onClick={this.onChangedData}>OK</button>
       </div>
     );
   }

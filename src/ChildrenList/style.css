@@ -1,0 +1,23 @@
+.childrenListBlock {
+    border: 1px solid #eee;
+    display: inline-block;
+    padding: 1rem 2rem;
+    box-shadow: 1px 1px 3px #eee;
+}
+
+.childrenListBlock {
+    list-style-type: none;
+    padding: 0;
+}
+
+.childrenListBlock a {
+    padding: 1rem;
+    border-bottom: 1px solid #eee;
+    display: block;
+}
+
+
+.childrenListBlock a:hover {
+    background: rgba(0, 134, 117, 0.8);
+    color: white;
+}

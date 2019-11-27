@@ -6,6 +6,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
+import './style.css';
 
 /**
  * View image block class.
@@ -15,15 +16,18 @@ import { Link } from 'react-router-dom';
 const View = ({ data }) => (
   <div>
     {data.items && (
-      <ul>
-        {data.items.map((item, i) => (
-          <li key={i}>
-            <Link to={item.url}>
-              <p>{item.title}</p>
-            </Link>
-          </li>
-        ))}
-      </ul>
+      <React.Fragment>
+        <h3 style={{ marginBottom: 0, padding: '0 1rem' }}>Navigation</h3>
+        <ul className="childrenListBlock">
+          {data.items.map((item, i) => (
+            <li key={i}>
+              <Link to={item.url}>
+                <h5>{item.title}</h5>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </React.Fragment>
     )}
   </div>
 );
