@@ -7,27 +7,35 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import './style.css';
+import { Card } from 'semantic-ui-react';
 
 /**
  * View image block class.
  * @class View
  * @extends Component
  */
-const View = ({ data }) => (
+const View = ({ data, properties }) => (
   <div>
-    {data.items && (
-      <React.Fragment>
-        <h3 style={{ marginBottom: 0, padding: '0 1rem' }}>Navigation</h3>
-        <ul className="childrenListBlock">
-          {data.items.map((item, i) => (
-            <li key={i}>
-              <Link to={item.url}>
-                <h5>{item.title}</h5>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </React.Fragment>
+    {data.showChildren && (
+      <Card fluid>
+        <Card.Header>
+          {' '}
+          <h3 style={{ marginBottom: 0, padding: '0 1rem' }}>Navigation</h3>
+        </Card.Header>
+        <Card.Content>
+          <Card.Group>
+            {properties.items.map((item, i) => (
+              <Card>
+                <Card.Content>
+                  <Link key={item.url} to={item.url}>
+                    <h5>{item.title}</h5>
+                  </Link>
+                </Card.Content>
+              </Card>
+            ))}
+          </Card.Group>
+        </Card.Content>
+      </Card>
     )}
   </div>
 );

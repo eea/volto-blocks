@@ -40,23 +40,17 @@ class Edit extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      hasChildren: false,
-      items: [],
+      showChildren: false,
     };
     this.onChangedData = this.onChangedData.bind(this);
   }
 
   componentDidMount() {
-    if (this.state.items !== this.props.properties.items) {
-      this.setState({ items: this.props.properties.items });
-    }
+    this.setState({ showChildren: true });
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if (
-      this.state.items.length &&
-      prevState.items.length !== this.state.items.length
-    ) {
+    if (prevState.showChildren !== this.state.showChildren) {
       this.onChangedData();
     }
   }
@@ -64,7 +58,7 @@ class Edit extends Component {
   onChangedData() {
     this.props.onChangeBlock(this.props.block, {
       ...this.props.data,
-      items: this.state.items,
+      showChildren: true,
     });
   }
 
@@ -74,8 +68,8 @@ class Edit extends Component {
    * @returns {string} Markup for the component.
    */
   render() {
+    const hasChildren = this.state.showChildren;
     const items = this.props.properties.items;
-    const hasChildren = items.length > 0 ? true : false;
     return (
       <div>
         {hasChildren && (
