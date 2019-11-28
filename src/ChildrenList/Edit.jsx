@@ -9,6 +9,8 @@ import { Link } from 'react-router-dom';
 import { Icon, SidebarPortal, TextWidget } from '@plone/volto/components';
 import { Input, Segment, Checkbox } from 'semantic-ui-react';
 import { defineMessages, injectIntl, FormattedMessage } from 'react-intl';
+import './style.css';
+import { Card } from 'semantic-ui-react';
 
 /**
  * Edit image block class.
@@ -46,7 +48,7 @@ class Edit extends Component {
       showChildren: false,
       title: '',
       itemsNumber: 0,
-      hideTitle: false,
+      hideTitle: true,
     };
     this.onChangedData = this.onChangedData.bind(this);
   }
@@ -54,9 +56,9 @@ class Edit extends Component {
   componentDidMount() {
     this.setState({ showChildren: true });
 
-    let items = this.props.properties.items.length;
+    let items = this.props.data.items || null;
     let title = this.props.data.title;
-    let hideTitle = this.props.properties.hideTitle;
+    let hideTitle = this.props.data.hideTitle || true;
 
     if (this.state.itemsNumber !== items) {
       this.setState({ itemsNumber: items });
@@ -133,19 +135,33 @@ class Edit extends Component {
     const itemsNumber = this.state.itemsNumber;
     const hideTitle = this.state.hideTitle;
 
-    const items = this.props.properties.items;
     return (
       <div>
         {hasChildren && (
-          <ul>
-            {items.map((item, i) => (
-              <li key={i}>
-                <Link to={item.url}>
-                  <p>{item.title}</p>
-                </Link>
-              </li>
-            ))}
-          </ul>
+            <div>
+            {this.state.showChildren && (
+              <Card fluid className="children-block">
+                {!hideTitle && (
+                  <Card.Header>
+                    <h3 style={{ marginBottom: 0, padding: '0 1rem' }}>
+                      {title}
+                    </h3>
+                  </Card.Header>
+                )}
+                <Card.Content>
+                  <Card.Group>
+                    {this.props.properties.items.filter((item, index) => itemsNumber ? index < itemsNumber : true).map((item, i) => (
+                      <Card>
+                        <Card.Content className="block-child">
+                            <h4 style={{margin: 0}}>{item.title}</h4>
+                        </Card.Content>
+                      </Card>
+                    ))}
+                  </Card.Group>
+                </Card.Content>
+              </Card>
+            )}
+          </div>
         )}
         {!hasChildren && <p> There are no children to display </p>}
         <SidebarPortal selected={this.props.selected}>

@@ -16,12 +16,11 @@ import { Card } from 'semantic-ui-react';
  */
 const View = ({ data, properties }) => {
   const hideTitle = data.hideTitle;
-  const items = properties.items;
-  items.length = data.items;
+  console.log('-------', properties.items)
   return (
     <div>
       {data.showChildren && (
-        <Card fluid>
+        <Card fluid className="children-block">
           {!hideTitle && (
             <Card.Header>
               <h3 style={{ marginBottom: 0, padding: '0 1rem' }}>
@@ -30,12 +29,12 @@ const View = ({ data, properties }) => {
             </Card.Header>
           )}
           <Card.Content>
-            <Card.Group className="children-block">
-              {properties.items.map((item, i) => (
+            <Card.Group>
+              {properties.items.filter((item, index) => data.items ? index < data.items : true).map((item, i) => (
                 <Card>
                   <Card.Content className="block-child">
                     <Link key={item.url} to={item.url}>
-                      <h5>{item.title}</h5>
+                      <h4>{item.title}</h4>
                     </Link>
                   </Card.Content>
                 </Card>
