@@ -7,16 +7,12 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import { Icon, SidebarPortal, TextWidget } from '@plone/volto/components';
-import { Input, Segment, Checkbox } from 'semantic-ui-react';
+import { Dropdown, Segment, Checkbox, Input } from 'semantic-ui-react';
 import { defineMessages, injectIntl, FormattedMessage } from 'react-intl';
 import './style.css';
 import { Card } from 'semantic-ui-react';
+import { settings } from '~/config';
 
-/**
- * Edit image block class.
- * @class Edit
- * @extends Component
- */
 class Edit extends Component {
   /**
    * Property types.
@@ -36,91 +32,74 @@ class Edit extends Component {
     onFocusNextBlock: PropTypes.func.isRequired,
   };
 
-  /**
-   * Constructor
-   * @method constructor
-   * @param {Object} props Component properties
-   * @constructs WysiwygEditor
-   */
   constructor(props) {
     super(props);
     this.state = {
-      showChildren: false,
-      title: '',
-      itemsNumber: 0,
-      hideTitle: true,
+      catalogue: props.data.catalogue || false,
+      catalogueList: props.data.catalogueList || {},
+      catalogueSelectionList: [],
+      details: [],
     };
-    this.onChangedData = this.onChangedData.bind(this);
   }
-
+  getPath(url) {
+    return url
+      .replace(settings.apiPath, '')
+      .replace(settings.internalApiPath, '');
+  }
   componentDidMount() {
-    this.setState({ showChildren: true });
-
-    let items = this.props.data.items || null;
-    let title = this.props.data.title;
-    let hideTitle = this.props.data.hideTitle || true;
-
-    if (this.state.itemsNumber !== items) {
-      this.setState({ itemsNumber: items });
-    }
-
-    if (this.state.title !== title) {
-      this.setState({ title });
-    }
-    if (this.state.hideTitle !== hideTitle) {
-      this.setState({ hideTitle });
-    }
+    const catalogueSelectionList =
+      this.props.properties.items.length &&
+      this.props.properties.items.map(item => ({
+        key: this.getPath(item['@id']),
+        text: item.title || item.Title,
+        value: this.getPath(item['@id']),
+      }));
+    this.setState({ catalogueSelectionList });
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if (prevState !== this.state) {
-      this.onChangedData();
+    if (JSON.stringify(prevState) !== JSON.stringify(this.state)) {
+      this.onChangeData();
     }
   }
 
-  onChangedData() {
+  onChangeData() {
     this.props.onChangeBlock(this.props.block, {
       ...this.props.data,
-      showChildren: true,
-      title: this.state.title,
-      items: this.state.itemsNumber,
-      hideTitle: this.state.hideTitle,
+      catalogue: this.state.catalogue,
+      catalogueList: this.state.catalogueList,
     });
   }
 
-  /**
-   * Change url handler
-   * @method onChangeTitle
-   * @param {Object} target Target object
-   * @returns {undefined}
-   */
-  onChangeTitle = ({ target }) => {
+  onChangeCatalogue = (event, data) => {
     this.setState({
-      title: target.value,
+      catalogue: data.checked,
     });
   };
 
-  /**
-   * Change url handler
-   * @method onChangeItemsNumber
-   * @param {Object} target Target object
-   * @returns {undefined}
-   */
-  onChangeItemsNumber = ({ target }) => {
+  onChangeCatalogueListing = (event, data) => {
+    const currentList = JSON.parse(JSON.stringify(this.state.catalogueList));
+    const newList = {};
+    data.value.forEach(item => {
+      newList[item] = {
+        description: currentList[item]?.description || '',
+        icon: currentList[item]?.icon || '',
+      };
+    });
     this.setState({
-      itemsNumber: target.value,
+      catalogueList: newList,
     });
   };
 
-  /**
-   * Change url handler
-   * @method onChangeTitle
-   * @param {Object} target Target object
-   * @returns {undefined}
-   */
-  onChangeHide = () => {
+  onChangeDescription = (itemKey, data) => {
     this.setState({
-      hideTitle: !this.state.hideTitle,
+      catalogueList: {
+        ...this.state.catalogueList,
+        [itemKey]: {
+          ...this.state.catalogueList[itemKey],
+          description: data.value,
+        },
+      },
     });
   };
 
@@ -130,40 +109,35 @@ class Edit extends Component {
    * @returns {string} Markup for the component.
    */
   render() {
-    const hasChildren = this.state.showChildren;
-    const title = this.state.title;
-    const itemsNumber = this.state.itemsNumber;
-    const hideTitle = this.state.hideTitle;
-
+    const childrenToDisplay = this.state.catalogue
+      ? this.state.catalogueSelectionList.filter(
+          item => this.state.catalogueList[item.value],
+        )
+      : this.state.catalogueSelectionList;
     return (
       <div>
-        {hasChildren && (
-            <div>
-            {this.state.showChildren && (
-              <Card fluid className="children-block">
-                {!hideTitle && (
-                  <Card.Header>
-                    <h3 style={{ marginBottom: 0, padding: '0 1rem' }}>
-                      {title}
-                    </h3>
-                  </Card.Header>
-                )}
-                <Card.Content>
-                  <Card.Group>
-                    {this.props.properties.items.filter((item, index) => itemsNumber ? index < itemsNumber : true).map((item, i) => (
-                      <Card>
-                        <Card.Content className="block-child">
-                            <h4 style={{margin: 0}}>{item.title}</h4>
-                        </Card.Content>
-                      </Card>
-                    ))}
-                  </Card.Group>
+        {!this.state.catalogueSelectionList &&
+          !this.state.catalogueSelectionList.length && <div>No children</div>}
+        {this.state.catalogue &&
+          !Object.keys(this.state.catalogueList).length && (
+            <div>Please select items to display for catalogue intro</div>
+          )}
+        {childrenToDisplay.length && (
+          <div fluid className="catalogue-listing-block">
+            {childrenToDisplay.map((item, i) => (
+              <Card>
+                <Card.Content className="catalogue-listing-block-item">
+                  <Link key={item.value} to={item.value}>
+                    <h3 style={{ margin: 0 }}>{item.text}</h3>
+                    {this.state.catalogueList[item.value]?.description && (
+                      <p>{this.state.catalogueList[item.value].description}</p>
+                    )}
+                  </Link>
                 </Card.Content>
               </Card>
-            )}
+            ))}
           </div>
         )}
-        {!hasChildren && <p> There are no children to display </p>}
         <SidebarPortal selected={this.props.selected}>
           <Segment.Group raised>
             <header className="header pulled">
@@ -171,31 +145,44 @@ class Edit extends Component {
             </header>
             <Segment className="form sidebar-image-data">
               <div className="segment-row">
-                <p>Title</p>
-                <Input
-                  onChange={this.onChangeTitle}
-                  placeholder="Change title"
-                  value={title}
-                  disabled={hideTitle}
-                />
-              </div>
-              <div className="segment-row">
-                <p>Max items</p>
-                <Input
-                  onChange={this.onChangeItemsNumber}
-                  placeholder="How many items in list"
-                  type="number"
-                  value={itemsNumber}
-                />
-              </div>
-              <div className="segment-row">
-                <p>Hide Title</p>
+                <p>Use for catalogue listing</p>
                 <Checkbox
                   toggle
-                  checked={hideTitle}
-                  onChange={this.onChangeHide}
+                  checked={this.state.catalogue}
+                  onChange={this.onChangeCatalogue}
                 />
               </div>
+              {this.state.catalogue && (
+                <div>
+                  <p>Pages to display</p>
+                  <Dropdown
+                    placeholder="Select catalogue links"
+                    fluid
+                    defaultValue={Object.keys(this.state.catalogueList)}
+                    multiple
+                    search
+                    selection
+                    onChange={this.onChangeCatalogueListing}
+                    options={this.state.catalogueSelectionList}
+                  />
+                </div>
+              )}
+              {this.state.catalogue &&
+                Object.keys(this.state.catalogueList).length &&
+                childrenToDisplay.map(item => (
+                  <div>
+                    {item.text}
+                    <Input
+                      defaultValue={
+                        this.state.catalogueList[item.value]?.description || ''
+                      }
+                      placeholder="Description"
+                      onChange={(event, data) =>
+                        this.onChangeDescription(item.value, data)
+                      }
+                    />
+                  </div>
+                ))}
             </Segment>
           </Segment.Group>
         </SidebarPortal>
