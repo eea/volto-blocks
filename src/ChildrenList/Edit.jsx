@@ -4,14 +4,21 @@
  */
 
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import PropTypes, { array } from 'prop-types';
 import { Link } from 'react-router-dom';
 import { Icon, SidebarPortal, TextWidget } from '@plone/volto/components';
-import { Dropdown, Segment, Checkbox, Input } from 'semantic-ui-react';
+import { Dropdown, Segment, Checkbox, Input, Button } from 'semantic-ui-react';
 import { defineMessages, injectIntl, FormattedMessage } from 'react-intl';
 import './style.css';
 import { Card } from 'semantic-ui-react';
 import { settings } from '~/config';
+import AddLinkForm from './AddLinkForm';
+
+function removeDuplicates(myArr, prop) {
+  return myArr.filter((obj, pos, arr) => {
+    return arr.map(mapObj => mapObj[prop]).indexOf(obj[prop]) === pos;
+  });
+}
 
 class Edit extends Component {
   /**
@@ -36,8 +43,8 @@ class Edit extends Component {
     super(props);
     this.state = {
       catalogue: props.data.catalogue || false,
-      catalogueList: props.data.catalogueList || {},
-      catalogueSelectionList: [],
+      catalogueList: this.props.data.catalogueList || [],
+      catalogueSelectionList: this.props.data.catalogueSelectionList || [],
       details: [],
     };
   }
@@ -47,15 +54,45 @@ class Edit extends Component {
       .replace(settings.internalApiPath, '');
   }
   componentDidMount() {
-    const catalogueSelectionList =
-      this.props.properties.items.length &&
-      this.props.properties.items.map(item => ({
-        key: this.getPath(item['@id']),
-        text: item.title || item.Title,
-        value: this.getPath(item['@id']),
-      }));
-    this.setState({ catalogueSelectionList });
+    console.log('-----', this.props.properties);
+    this.setInitialCatalogueSelectionList();
   }
+
+  resetCatalogueSelectionList = () => {
+    const catalogueSelectionList =
+      (this.props.properties.items.length &&
+        this.props.properties.items.map(item => ({
+          key: this.getPath(item['@id']),
+          text: item.title || item.Title,
+          value: this.getPath(item['@id']),
+          description: item.description,
+          image: item.image?.download,
+        }))) ||
+      [];
+    this.setState({ catalogueSelectionList });
+  };
+
+  setInitialCatalogueSelectionList = () => {
+    const catalogueSelectionListFromChildren =
+      (this.props.properties.items.length &&
+        this.props.properties.items.map(item => ({
+          key: this.getPath(item['@id']),
+          text: item.title || item.Title,
+          value: this.getPath(item['@id']),
+          description: item.description,
+          image: item.image?.download,
+        }))) ||
+      [];
+    const catalogueSelectionList = removeDuplicates(
+      [
+        ...catalogueSelectionListFromChildren,
+        ...this.state.catalogueSelectionList,
+      ],
+      'key',
+    );
+    console.log('initial', this.state.catalogueSelectionList)
+    this.setState({ catalogueSelectionList });
+  };
 
   componentDidUpdate(prevProps, prevState) {
     if (JSON.stringify(prevState) !== JSON.stringify(this.state)) {
@@ -68,6 +105,7 @@ class Edit extends Component {
       ...this.props.data,
       catalogue: this.state.catalogue,
       catalogueList: this.state.catalogueList,
+      catalogueSelectionList: this.state.catalogueSelectionList,
     });
   }
 
@@ -78,63 +116,51 @@ class Edit extends Component {
   };
 
   onChangeCatalogueListing = (event, data) => {
-    const currentList = JSON.parse(JSON.stringify(this.state.catalogueList));
-    const newList = {};
-    data.value.forEach(item => {
-      newList[item] = {
-        description: currentList[item]?.description || '',
-        icon: currentList[item]?.icon || '',
-      };
-    });
     this.setState({
-      catalogueList: newList,
+      catalogueList: data.value,
     });
   };
 
-  onChangeDescription = (itemKey, data) => {
+  onAddLink = link => {
     this.setState({
-      catalogueList: {
-        ...this.state.catalogueList,
-        [itemKey]: {
-          ...this.state.catalogueList[itemKey],
-          description: data.value,
-        },
-      },
+      catalogueSelectionList: removeDuplicates(
+        [...this.state.catalogueSelectionList, link],
+        'key',
+      ),
     });
   };
 
-  /**
-   * Render method.
-   * @method render
-   * @returns {string} Markup for the component.
-   */
   render() {
     const childrenToDisplay = this.state.catalogue
-      ? this.state.catalogueSelectionList.filter(
-          item => this.state.catalogueList[item.value],
+      ? this.state.catalogueSelectionList.filter(item =>
+          this.state.catalogueList.includes(item.value),
         )
       : this.state.catalogueSelectionList;
     return (
       <div>
         {!this.state.catalogueSelectionList &&
           !this.state.catalogueSelectionList.length && <div>No children</div>}
-        {this.state.catalogue &&
-          !Object.keys(this.state.catalogueList).length && (
-            <div>Please select items to display for catalogue intro</div>
-          )}
+        {this.state.catalogue && !this.state.catalogueList.length && (
+          <div>Please select items to display for catalogue intro</div>
+        )}
         {childrenToDisplay.length && (
           <div fluid className="catalogue-listing-block">
             {childrenToDisplay.map((item, i) => (
-              <Card>
-                <Card.Content className="catalogue-listing-block-item">
-                  <Link key={item.value} to={item.value}>
-                    <h3 style={{ margin: 0 }}>{item.text}</h3>
-                    {this.state.catalogueList[item.value]?.description && (
-                      <p>{this.state.catalogueList[item.value].description}</p>
-                    )}
-                  </Link>
-                </Card.Content>
-              </Card>
+              <div className="catalogue-listing-block-item">
+                <Link key={item.value} to={item.value}>
+                  <div className="catalogue-listing-block-item-title">
+                    {item.text}
+                  </div>
+                  {item.description && <p>{item.description}</p>}
+                  {item.image && (
+                    <img
+                      style={{ maxWidth: '100%' }}
+                      src={item.image}
+                      alt="icon"
+                    />
+                  )}
+                </Link>
+              </div>
             ))}
           </div>
         )}
@@ -145,7 +171,7 @@ class Edit extends Component {
             </header>
             <Segment className="form sidebar-image-data">
               <div className="segment-row">
-                <p>Use for catalogue listing</p>
+                <p>Custom listing</p>
                 <Checkbox
                   toggle
                   checked={this.state.catalogue}
@@ -158,7 +184,7 @@ class Edit extends Component {
                   <Dropdown
                     placeholder="Select catalogue links"
                     fluid
-                    defaultValue={Object.keys(this.state.catalogueList)}
+                    defaultValue={this.state.catalogueList}
                     multiple
                     search
                     selection
@@ -167,22 +193,16 @@ class Edit extends Component {
                   />
                 </div>
               )}
-              {this.state.catalogue &&
-                Object.keys(this.state.catalogueList).length &&
-                childrenToDisplay.map(item => (
-                  <div>
-                    {item.text}
-                    <Input
-                      defaultValue={
-                        this.state.catalogueList[item.value]?.description || ''
-                      }
-                      placeholder="Description"
-                      onChange={(event, data) =>
-                        this.onChangeDescription(item.value, data)
-                      }
-                    />
-                  </div>
-                ))}
+
+              <div className="segment-row">
+                <p>Non-children links</p>
+                <AddLinkForm onAddLink={this.onAddLink} />
+              </div>
+              <div className="segment-row">
+                <Button onClick={() => this.resetCatalogueSelectionList()}>
+                  Remove non children from list
+                </Button>
+              </div>
             </Segment>
           </Segment.Group>
         </SidebarPortal>

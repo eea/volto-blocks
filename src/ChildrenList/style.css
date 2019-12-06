@@ -1,30 +1,68 @@
-.children-block.card .header {
-    position: relative!important;
-    height: unset!important;
+.catalogue-listing-block {
+    display: flex;
+    flex-wrap: wrap;
+    max-width: 800px;
+    margin: 0 auto;
+} 
+ 
+.catalogue-listing-block-item {
+    width: 50%;
+    min-height: 200px;
+    display: flex;
+    justify-content: flex-end;
     padding: 1rem;
-    display: block!important;
+    padding-left: 60px;
+    position: relative;
 }
 
-.children-block .cards {
-    padding-bottom: 0!important;
+
+.catalogue-listing-block-item:nth-child(odd) {
+    justify-content: flex-start;
+    border-right: 1px solid #eee;
+    padding-left: 1rem;
+    padding-right: 60px;
 }
 
-.segment-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 0.3rem;
-  }
+.catalogue-listing-block-item:nth-child(even) a {
+    text-align: right;
+}
 
-  .children-block {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 150px;
-  }
+.catalogue-listing-block-item img {
+    position: absolute;
+    width: 60px;
+    height: auto;
+    top: 1rem;
+    right: 1rem;
+    opacity: 0.5;
+}
 
-  ..block-child {
-      display: flex;
-      justify-content: center;
-      align-content: center;
-  }
+.catalogue-listing-block-item:nth-child(even) img {
+    right: unset;
+    left: 1rem;
+}
+
+.catalogue-listing-block-item p {
+    color: #444;
+    font-size: 16px;
+    position: relative;
+}
+
+.catalogue-listing-block-item {
+    border-bottom: 1px solid #eee;
+}
+
+.catalogue-listing-block-item:nth-last-child(-n+2) {
+    border-bottom: none;
+}
+
+.catalogue-listing-block-item-title {
+    font-family: 'Roboto Condensed';
+    font-size: 28px;
+    color: rgb(102,102,102);
+    font-weight: bold;
+    position: relative;
+}
+
+.center-heading h1.documentFirstHeading {
+    text-align: center;
+}
