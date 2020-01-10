@@ -49,10 +49,12 @@ class Edit extends Component {
     };
   }
   getPath(url) {
+    if (!url) return '';
     return url
       .replace(settings.apiPath, '')
       .replace(settings.internalApiPath, '');
   }
+
   componentDidMount() {
     console.log('-----', this.props.properties);
     this.setInitialCatalogueSelectionList();
@@ -66,7 +68,7 @@ class Edit extends Component {
           text: item.title || item.Title,
           value: this.getPath(item['@id']),
           description: item.description,
-          image: item.image?.download,
+          image: this.getPath(item.image?.download),
         }))) ||
       [];
     this.setState({ catalogueSelectionList });
@@ -80,7 +82,7 @@ class Edit extends Component {
           text: item.title || item.Title,
           value: this.getPath(item['@id']),
           description: item.description,
-          image: item.image?.download,
+          image: this.getPath(item.image?.download),
         }))) ||
       [];
     const catalogueSelectionList = removeDuplicates(
@@ -90,7 +92,7 @@ class Edit extends Component {
       ],
       'key',
     );
-    console.log('initial', this.state.catalogueSelectionList)
+    console.log('initial', this.state.catalogueSelectionList);
     this.setState({ catalogueSelectionList });
   };
 

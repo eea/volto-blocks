@@ -57,7 +57,7 @@ class View extends Component {
           text: item.title || item.Title,
           value: this.getPath(item['@id']),
           description: item.description,
-          image: item.image?.download,
+          image: this.getPath(item.image?.download),
         }))) ||
       [];
     const catalogueSelectionList = removeDuplicates(
