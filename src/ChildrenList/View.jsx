@@ -41,6 +41,7 @@ class View extends Component {
     };
   }
   getPath(url) {
+    if (!url) return '';
     return url
       .replace(settings.apiPath, '')
       .replace(settings.internalApiPath, '');
@@ -67,10 +68,9 @@ class View extends Component {
       ],
       'key',
     );
-    console.log('initial', this.state.catalogueSelectionList)
+    console.log('initial', this.state.catalogueSelectionList);
     this.setState({ catalogueSelectionList });
   };
-
 
   render() {
     const childrenToDisplay = this.state.catalogue
@@ -80,7 +80,7 @@ class View extends Component {
       : this.state.catalogueSelectionList;
     return (
       <div>
-        <BodyClass className="center-heading"></BodyClass>
+        <BodyClass className="center-heading" />
         {!this.state.catalogueSelectionList &&
           !this.state.catalogueSelectionList.length && <div>No children</div>}
         {this.state.catalogue && !this.state.catalogueList.length && (
