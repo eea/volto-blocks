@@ -4,15 +4,15 @@
  */
 
 import React, { Component } from 'react';
-import PropTypes, { array } from 'prop-types';
+import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
-import { Dropdown, Segment, Checkbox, Input, Button } from 'semantic-ui-react';
-import { defineMessages, injectIntl, FormattedMessage } from 'react-intl';
+import { injectIntl } from 'react-intl';
 import './style.css';
-import { Card } from 'semantic-ui-react';
 import { settings } from '~/config';
-import AddLinkForm from './AddLinkForm';
 import { BodyClass } from '@plone/volto/helpers';
+
+// import { Dropdown, Segment, Checkbox, Input, Button } from 'semantic-ui-react';
+// import AddLinkForm from './AddLinkForm';
 
 function removeDuplicates(myArr, prop) {
   return myArr.filter((obj, pos, arr) => {
@@ -28,7 +28,7 @@ class View extends Component {
    */
   static propTypes = {
     data: PropTypes.objectOf(PropTypes.any).isRequired,
-    pathname: PropTypes.string.isRequired,
+    // pathname: PropTypes.string.isRequired,
   };
 
   constructor(props) {
@@ -87,9 +87,9 @@ class View extends Component {
           <div>Please select items to display for catalogue intro</div>
         )}
         {childrenToDisplay.length && (
-          <div fluid className="catalogue-listing-block">
+          <div className="catalogue-listing-block">
             {childrenToDisplay.map((item, i) => (
-              <div className="catalogue-listing-block-item">
+              <div className="catalogue-listing-block-item" key={i}>
                 <Link key={item.value} to={item.value}>
                   <div className="catalogue-listing-block-item-title">
                     {item.text}
